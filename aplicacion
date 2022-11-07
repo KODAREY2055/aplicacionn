@@ -1,0 +1,930 @@
+pply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "23.0.1"
+    defaultConfig {
+        applicationId "mx.com.rteck.datospersonales"
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    compile'com.android.support:design:24.2.0'
+    testCompile 'junit:junit:4.12'
+}
+ 17  
+Desarrollando una Aplicación/app/proguard-rules.pro
+@@ -0,0 +1,17 @@
+# Add project specific ProGuard rules here.
+# By default, the flags in this file are appended to flags specified
+# in C:\Android\sdk1/tools/proguard/proguard-android.txt
+# You can edit the include path and order by changing the proguardFiles
+# directive in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
+
+# Add any project specific keep options here:
+
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+ 26  
+...cación/app/src/androidTest/java/mx/com/rteck/datospersonales/ExampleInstrumentedTest.java
+@@ -0,0 +1,26 @@
+package mx.com.rteck.datospersonales;
+
+import android.content.Context;
+import android.support.test.InstrumentationRegistry;
+import android.support.test.runner.AndroidJUnit4;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.junit.Assert.*;
+
+/**
+ * Instrumentation test, which will execute on an Android device.
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
+@RunWith(AndroidJUnit4.class)
+public class ExampleInstrumentedTest {
+    @Test
+    public void useAppContext() throws Exception {
+        // Context of the app under test.
+        Context appContext = InstrumentationRegistry.getTargetContext();
+
+        assertEquals("mx.com.rteck.datospersonales", appContext.getPackageName());
+    }
+}
+ 21  
+Desarrollando una Aplicación/app/src/main/AndroidManifest.xml
+@@ -0,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="mx.com.rteck.datospersonales">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity android:name=".MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".MuestaDatos"></activity>
+    </application>
+
+</manifest>
+ 60  
+...rrollando una Aplicación/app/src/main/java/mx/com/rteck/datospersonales/MainActivity.java
+@@ -0,0 +1,60 @@
+package mx.com.rteck.datospersonales;
+
+import android.content.Intent;
+import android.support.design.widget.TextInputEditText;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.DatePicker;
+import android.widget.TextView;
+
+public class MainActivity extends AppCompatActivity {
+    TextInputEditText nombre;
+    DatePicker fecha;
+    TextInputEditText telefono;
+    TextInputEditText email;
+    TextInputEditText descripcion;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        nombre      =   (TextInputEditText) findViewById(R.id.inp_nombre);
+        fecha       =   (DatePicker) findViewById(R.id.date_picker);
+        telefono    =   (TextInputEditText) findViewById(R.id.inp_telefono);
+        email       =   (TextInputEditText) findViewById(R.id.inp_email);
+        descripcion =   (TextInputEditText) findViewById(R.id.inp_descripcion);
+
+        if(getIntent().hasExtra(getResources().getString(R.string.e_nombre)))
+        {
+            Bundle parametros = getIntent().getExtras();
+
+            String Nombre = parametros.getString(getResources().getString(R.string.e_nombre));
+            String Telefono = parametros.getString(getResources().getString(R.string.e_telefono));
+            int Año = parametros.getInt(getResources().getString(R.string.e_año));
+            int Mes = parametros.getInt(getResources().getString(R.string.e_mes));
+            int Dia = parametros.getInt(getResources().getString(R.string.e_dia));
+            String Descripcion = parametros.getString(getResources().getString(R.string.e_descripcion));
+            String Email = parametros.getString(getResources().getString(R.string.e_email));
+            nombre.setText(Nombre);
+            fecha.init(Año,Mes,Dia,null);
+            telefono.setText(Telefono);
+            email.setText(Email);
+            descripcion.setText(Descripcion);
+        }
+    }
+
+    public void Siguiente(View v)
+    {
+        Intent intent = new Intent(MainActivity.this,MuestaDatos.class);
+        intent.putExtra(getResources().getString(R.string.e_nombre),nombre.getText().toString());
+        String Fecha= fecha.getDayOfMonth()+"/"+fecha.getMonth()+"/"+fecha.getYear();
+        intent.putExtra(getResources().getString(R.string.e_año),fecha.getYear());
+        intent.putExtra(getResources().getString(R.string.e_mes),fecha.getMonth());
+        intent.putExtra(getResources().getString(R.string.e_dia),fecha.getDayOfMonth());
+        intent.putExtra(getResources().getString(R.string.e_telefono),telefono.getText().toString());
+        intent.putExtra(getResources().getString(R.string.e_email),email.getText().toString());
+        intent.putExtra(getResources().getString(R.string.e_descripcion),descripcion.getText().toString());
+        startActivity(intent);
+    }
+}
+ 67  
+Desarrollando una Aplicación/app/src/main/java/mx/com/rteck/datospersonales/MuestaDatos.java
+@@ -0,0 +1,67 @@
+package mx.com.rteck.datospersonales;
+
+import android.content.Intent;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.TextView;
+
+public class MuestaDatos extends AppCompatActivity {
+
+    TextView nombre;
+    TextView fecha;
+    TextView telefono;
+    TextView descripcion;
+    TextView email;
+
+    String Nombre;
+    String Telefono;
+    int Año;
+    int Mes;
+    int Dia;
+    String Descripcion;
+    String Email;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_muesta_datos);
+        Bundle parametros = getIntent().getExtras();
+
+         Nombre = parametros.getString(getResources().getString(R.string.e_nombre));
+         Telefono = parametros.getString(getResources().getString(R.string.e_telefono));
+         Año = parametros.getInt(getResources().getString(R.string.e_año));
+         Mes = parametros.getInt(getResources().getString(R.string.e_mes));
+         Dia = parametros.getInt(getResources().getString(R.string.e_dia));
+         Descripcion = parametros.getString(getResources().getString(R.string.e_descripcion));
+         Email = parametros.getString(getResources().getString(R.string.e_email));
+
+        String Fecha=Año+"/"+Mes+"/"+Dia;
+
+        nombre      =   (TextView)  findViewById(R.id.tvNombre);
+        fecha       =   (TextView)  findViewById(R.id.tvFecha);
+        telefono    =   (TextView)  findViewById(R.id.tvTelefono);
+        descripcion =   (TextView)  findViewById(R.id.tvDescripcion);
+        email       =   (TextView)  findViewById(R.id.tvEmail);
+
+        nombre.setText(Nombre);
+        fecha.setText(Fecha);
+        telefono.setText(Telefono);
+        descripcion.setText(Descripcion);
+        email.setText(Email);
+    }
+
+    public void Regresar(View v)
+    {
+        Intent intent = new Intent(MuestaDatos.this,MainActivity.class);
+        intent.putExtra(getResources().getString(R.string.e_nombre),nombre.getText().toString());
+
+        intent.putExtra(getResources().getString(R.string.e_año),Año);
+        intent.putExtra(getResources().getString(R.string.e_mes),Mes);
+        intent.putExtra(getResources().getString(R.string.e_dia),Dia);
+        intent.putExtra(getResources().getString(R.string.e_telefono),telefono.getText().toString());
+        intent.putExtra(getResources().getString(R.string.e_email),email.getText().toString());
+        intent.putExtra(getResources().getString(R.string.e_descripcion),descripcion.getText().toString());
+        startActivity(intent);
+    }
+}
+ 110  
+Desarrollando una Aplicación/app/src/main/res/layout/activity_main.xml
+@@ -0,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android.support.design="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        tools:context="mx.com.rteck.datospersonales.MainActivity"
+        android:padding="5dp"
+        >
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/input_nombre"
+            >
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/inp_nombre"
+                android:inputType="text"
+                />
+
+        </android.support.design.widget.TextInputLayout>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_cumpleaños"
+        android:layout_marginLeft="@dimen/margin_cumpleaños"
+        />
+
+    <android.widget.DatePicker
+        android:id="@+id/date_picker"
+        android:calendarViewShown="false"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+
+        android:datePickerMode="spinner"
+        android:layout_gravity="center"
+        android:layout_marginLeft="0dp"
+        android:layout_marginTop="0dp"
+        android:layout_marginRight="0dp"
+        android:layout_marginBottom="0dp" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="phone"
+                android:id="@+id/inp_telefono"
+                android:hint="@string/input_telefono"/>
+
+
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:id="@+id/inp_email"
+                android:hint="@string/input_email"/>
+
+
+
+        </android.support.design.widget.TextInputLayout>
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <android.support.design.widget.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:id="@+id/inp_descripcion"
+                android:hint="@string/input_descripcion"/>
+
+
+
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/Miboton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tvTitulo"
+            android:text="@string/btn_siguiente"
+            android:theme="@style/MiBotonRaised"
+            android:onClick="Siguiente"
+            />
+
+    </LinearLayout>
+
+
+
+ 142  
+Desarrollando una Aplicación/app/src/main/res/layout/activity_muesta_datos.xml
+@@ -0,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_muesta_datos"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+
+    tools:context="mx.com.rteck.datospersonales.MuestaDatos">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/text_confirmar"
+        android:textStyle="bold"
+        android:textSize="@dimen/texto_titulo"
+        android:textAlignment="center"
+        android:id="@+id/tvTitulo"
+        android:layout_marginBottom="@dimen/margin_titulo"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tvNombre"
+        android:text="@string/text_nombre"
+        android:textSize="@dimen/texto_datos"
+        android:layout_marginBottom="@dimen/margin_datos"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tviFecha"
+            android:text="@string/text_fecha"
+            android:textStyle="bold"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvFecha"
+            android:text="@string/fecha"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tviTelefono"
+            android:text="@string/text_telefono"
+            android:textStyle="bold"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvTelefono"
+            android:text="@string/telefono"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tviEmail"
+            android:text="@string/text_email"
+            android:textStyle="bold"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvEmail"
+            android:text="@string/email"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tviDescripcion"
+            android:text="@string/text_descripcion"
+            android:textStyle="bold"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/tvDescripcion"
+            android:text="@string/descripcion"
+            android:textSize="@dimen/texto_datos"
+            android:layout_marginBottom="@dimen/margin_datos"
+            />
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/Miboton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvTitulo"
+        android:text="@string/btn_editar"
+        android:onClick="Regresar"
+        android:theme="@style/MiBotonRaised"
+        />
+
+
+</LinearLayout>
+ BIN +3.34 KB 
+Desarrollando una Aplicación/app/src/main/res/mipmap-hdpi/ic_launcher.png
+
+ BIN +2.15 KB 
+Desarrollando una Aplicación/app/src/main/res/mipmap-mdpi/ic_launcher.png
+
+ BIN +4.73 KB 
+Desarrollando una Aplicación/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+
+ BIN +7.54 KB 
+Desarrollando una Aplicación/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+
+ BIN +10.2 KB 
+Desarrollando una Aplicación/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+ 6  
+Desarrollando una Aplicación/app/src/main/res/values-w820dp/dimens.xml
+@@ -0,0 +1,6 @@
+<resources>
+    <!-- Example customization of dimensions originally defined in res/values/dimens.xml
+         (such as screen margins) for screens with more than 820dp of available width. This
+         would include 7" and 10" devices in landscape (~960dp and ~1280dp respectively). -->
+    <dimen name="activity_horizontal_margin">64dp</dimen>
+</resources>
+ 9  
+Desarrollando una Aplicación/app/src/main/res/values/colors.xml
+@@ -0,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#E91E63</color>
+    <color name="colorPrimaryDark">#C2185B</color>
+    <color name="colorAccent">#448AFF</color>
+    <color name="textoTitulo">#FFFFFF</color>
+    <color name="colorBlanco">#FFFFFF</color>
+    <color name="colorFondo">#e6e5e5</color>
+</resources>
+ 10  
+Desarrollando una Aplicación/app/src/main/res/values/dimens.xml
+@@ -0,0 +1,10 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="margin_cumpleaños">6dp</dimen>
+    <dimen name="texto_titulo">30dp</dimen>
+    <dimen name="margin_titulo">30dp</dimen>
+    <dimen name="texto_datos">18dp</dimen>
+    <dimen name="margin_datos">10dp</dimen>
+</resources>
+ 29  
+Desarrollando una Aplicación/app/src/main/res/values/strings.xml
+@@ -0,0 +1,29 @@
+<resources>
+    <string name="app_name">DatosPersonales</string>
+    <string name="input_nombre">Nombre Completo</string>
+    <string name="input_telefono">Telefono</string>
+    <string name="input_email">Email</string>
+    <string name="input_date">Email</string>
+    <string name="input_descripcion">Descripcion Contacto</string>
+    <string name="text_cumpleaños">Fecha Nacimiento</string>
+    <string name="text_confirmar">Confirmar Datos</string>
+    <string name="text_nombre">Gerardo Monreal</string>
+    <string name="fecha">20/12/91</string>
+    <string name="text_fecha">Fecha Nacimiento: </string>
+    <string name="telefono">33445556</string>
+    <string name="text_telefono">Tel: </string>
+    <string name="email">gerardo@gmail.com</string>
+    <string name="text_email">Email: </string>
+    <string name="descripcion">Conocí a Gerardo en la universidad</string>
+    <string name="text_descripcion">Descripción: </string>
+    <string name="btn_siguiente">Siguiente</string>
+    <string name="btn_editar">Editar Datos</string>
+    <string name="e_nombre">Nombre</string>
+    <string name="e_fecha">Fecha</string>
+    <string name="e_telefono">Telefono</string>
+    <string name="e_email">Email</string>
+    <string name="e_descripcion">Descripcion</string>
+    <string name="e_año">Año</string>
+    <string name="e_mes">Mes</string>
+    <string name="e_dia">Dia</string>
+</resources>
+ 16  
+Desarrollando una Aplicación/app/src/main/res/values/styles.xml
+@@ -0,0 +1,16 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+    <!-- Boton levantado con efecto de agua -->
+    <style name="MiBotonRaised" parent="Theme.AppCompat.Light"><!-- Se indica en que estilo estara -->
+        <item name="colorButtonNormal">@color/colorAccent</item><!-- color de fondo del boton -->
+        <item name="colorControlHighlight">@color/colorBlanco</item><!-- color de la onda -->
+        <item name="android:textColor">@color/colorBlanco</item><!-- Color del texto-->
+    </style>
+</resources>
+ 17  
+...llando una Aplicación/app/src/test/java/mx/com/rteck/datospersonales/ExampleUnitTest.java
+@@ -0,0 +1,17 @@
+package mx.com.rteck.datospersonales;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+/**
+ * Example local unit test, which will execute on the development machine (host).
+ *
+ * @see <a href="http://d.android.com/tools/testing">Testing documentation</a>
+ */
+public class ExampleUnitTest {
+    @Test
+    public void addition_isCorrect() throws Exception {
+        assertEquals(4, 2 + 2);
+    }
+}
+ 23  
+Desarrollando una Aplicación/build.gradle
+@@ -0,0 +1,23 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.2.0-beta1'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+ 17  
+Desarrollando una Aplicación/gradle.properties
+@@ -0,0 +1,17 @@
+# Project-wide Gradle settings.
+
+# IDE (e.g. Android Studio) users:
+# Gradle settings configured through the IDE *will override*
+# any settings specified in this file.
+
+# For more details on how to configure your build environment visit
+# http://www.gradle.org/docs/current/userguide/build_environment.html
+
+# Specifies the JVM arguments used for the daemon process.
+# The setting is particularly useful for tweaking memory settings.
+org.gradle.jvmargs=-Xmx1536m
+
+# When configured, Gradle will run in incubating parallel mode.
+# This option should only be used with decoupled projects. More details, visit
+# http://www.gradle.org/docs/current/userguide/multi_project_builds.html#sec:decoupled_projects
+# org.gradle.parallel=true
+ BIN +52.4 KB 
+Desarrollando una Aplicación/gradle/wrapper/gradle-wrapper.jar
+Binary file not shown.
+ 6  
+Desarrollando una Aplicación/gradle/wrapper/gradle-wrapper.properties
+@@ -0,0 +1,6 @@
+#Mon Dec 28 10:00:20 PST 2015
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-2.14.1-all.zip
+ 160  
+Desarrollando una Aplicación/gradlew
+@@ -0,0 +1,160 @@
+#!/usr/bin/env bash
+
+##############################################################################
+##
+##  Gradle start up script for UN*X
+##
+##############################################################################
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS=""
+
+APP_NAME="Gradle"
+APP_BASE_NAME=`basename "$0"`
+
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD="maximum"
+
+warn ( ) {
+    echo "$*"
+}
+
+die ( ) {
+    echo
+    echo "$*"
+    echo
+    exit 1
+}
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+darwin=false
+case "`uname`" in
+  CYGWIN* )
+    cygwin=true
+    ;;
+  Darwin* )
+    darwin=true
+    ;;
+  MINGW* )
+    msys=true
+    ;;
+esac
+
+# Attempt to set APP_HOME
+# Resolve links: $0 may be a link
+PRG="$0"
+# Need this for relative symlinks.
+while [ -h "$PRG" ] ; do
+    ls=`ls -ld "$PRG"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '/.*' > /dev/null; then
+        PRG="$link"
+    else
+        PRG=`dirname "$PRG"`"/$link"
+    fi
+done
+SAVED="`pwd`"
+cd "`dirname \"$PRG\"`/" >/dev/null
+APP_HOME="`pwd -P`"
+cd "$SAVED" >/dev/null
+
+CLASSPATH=$APP_HOME/gradle/wrapper/gradle-wrapper.jar
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD="$JAVA_HOME/jre/sh/java"
+    else
+        JAVACMD="$JAVA_HOME/bin/java"
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD="java"
+    which java >/dev/null 2>&1 || die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+fi
+
+# Increase the maximum file descriptors if we can.
+if [ "$cygwin" = "false" -a "$darwin" = "false" ] ; then
+    MAX_FD_LIMIT=`ulimit -H -n`
+    if [ $? -eq 0 ] ; then
+        if [ "$MAX_FD" = "maximum" -o "$MAX_FD" = "max" ] ; then
+            MAX_FD="$MAX_FD_LIMIT"
+        fi
+        ulimit -n $MAX_FD
+        if [ $? -ne 0 ] ; then
+            warn "Could not set maximum file descriptor limit: $MAX_FD"
+        fi
+    else
+        warn "Could not query maximum file descriptor limit: $MAX_FD_LIMIT"
+    fi
+fi
+
+# For Darwin, add options to specify how the application appears in the dock
+if $darwin; then
+    GRADLE_OPTS="$GRADLE_OPTS \"-Xdock:name=$APP_NAME\" \"-Xdock:icon=$APP_HOME/media/gradle.icns\""
+fi
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin ; then
+    APP_HOME=`cygpath --path --mixed "$APP_HOME"`
+    CLASSPATH=`cygpath --path --mixed "$CLASSPATH"`
+    JAVACMD=`cygpath --unix "$JAVACMD"`
+
+    # We build the pattern for arguments to be converted via cygpath
+    ROOTDIRSRAW=`find -L / -maxdepth 1 -mindepth 1 -type d 2>/dev/null`
+    SEP=""
+    for dir in $ROOTDIRSRAW ; do
+        ROOTDIRS="$ROOTDIRS$SEP$dir"
+        SEP="|"
+    done
+    OURCYGPATTERN="(^($ROOTDIRS))"
+    # Add a user-defined pattern to the cygpath arguments
+    if [ "$GRADLE_CYGPATTERN" != "" ] ; then
+        OURCYGPATTERN="$OURCYGPATTERN|($GRADLE_CYGPATTERN)"
+    fi
+    # Now convert the arguments - kludge to limit ourselves to /bin/sh
+    i=0
+    for arg in "$@" ; do
+        CHECK=`echo "$arg"|egrep -c "$OURCYGPATTERN" -`
+        CHECK2=`echo "$arg"|egrep -c "^-"`                                 ### Determine if an option
+
+        if [ $CHECK -ne 0 ] && [ $CHECK2 -eq 0 ] ; then                    ### Added a condition
+            eval `echo args$i`=`cygpath --path --ignore --mixed "$arg"`
+        else
+            eval `echo args$i`="\"$arg\""
+        fi
+        i=$((i+1))
+    done
+    case $i in
+        (0) set -- ;;
+        (1) set -- "$args0" ;;
+        (2) set -- "$args0" "$args1" ;;
+        (3) set -- "$args0" "$args1" "$args2" ;;
+        (4) set -- "$args0" "$args1" "$args2" "$args3" ;;
+        (5) set -- "$args0" "$args1" "$args2" "$args3" "$args4" ;;
+        (6) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" ;;
+        (7) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" ;;
+        (8) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" ;;
+        (9) set -- "$args0" "$args1" "$args2" "$args3" "$args4" "$args5" "$args6" "$args7" "$args8" ;;
+    esac
+fi
+
+# Split up the JVM_OPTS And GRADLE_OPTS values into an array, following the shell quoting and substitution rules
+function splitJvmOpts() {
+    JVM_OPTS=("$@")
+}
+eval splitJvmOpts $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS
+JVM_OPTS[${#JVM_OPTS[*]}]="-Dorg.gradle.appname=$APP_BASE_NAME"
+
+exec "$JAVACMD" "${JVM_OPTS[@]}" -classpath "$CLASSPATH" org.gradle.wrapper.GradleWrapperMain "$@"
+ 90  
+Desarrollando una Aplicación/gradlew.bat
+@@ -0,0 +1,90 @@
+@if "%DEBUG%" == "" @echo off
+@rem ##########################################################################
+@rem
+@rem  Gradle startup script for Windows
+@rem
+@rem ##########################################################################
+
+@rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
+
+@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+set DEFAULT_JVM_OPTS=
+
+set DIRNAME=%~dp0
+if "%DIRNAME%" == "" set DIRNAME=.
+set APP_BASE_NAME=%~n0
+set APP_HOME=%DIRNAME%
+
+@rem Find java.exe
+if defined JAVA_HOME goto findJavaFromJavaHome
+
+set JAVA_EXE=java.exe
+%JAVA_EXE% -version >NUL 2>&1
+if "%ERRORLEVEL%" == "0" goto init
+
+echo.
+echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+echo.
+echo Please set the JAVA_HOME variable in your environment to match the
+echo location of your Java installation.
+
+goto fail
+
+:findJavaFromJavaHome
+set JAVA_HOME=%JAVA_HOME:"=%
+set JAVA_EXE=%JAVA_HOME%/bin/java.exe
+
+if exist "%JAVA_EXE%" goto init
+
+echo.
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME%
+echo.
+echo Please set the JAVA_HOME variable in your environment to match the
+echo location of your Java installation.
+
+goto fail
+
+:init
+@rem Get command-line arguments, handling Windowz variants
+
+if not "%OS%" == "Windows_NT" goto win9xME_args
+if "%@eval[2+2]" == "4" goto 4NT_args
+
+:win9xME_args
+@rem Slurp the command line arguments.
+set CMD_LINE_ARGS=
+set _SKIP=2
+
+:win9xME_args_slurp
+if "x%~1" == "x" goto execute
+
+set CMD_LINE_ARGS=%*
+goto execute
+
+:4NT_args
+@rem Get arguments from the 4NT Shell from JP Software
+set CMD_LINE_ARGS=%$
+
+:execute
+@rem Setup the command line
+
+set CLASSPATH=%APP_HOME%\gradle\wrapper\gradle-wrapper.jar
+
+@rem Execute Gradle
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" org.gradle.wrapper.GradleWrapperMain %CMD_LINE_ARGS%
+
+:end
+@rem End local scope for the variables with windows NT shell
+if "%ERRORLEVEL%"=="0" goto mainEnd
+
+:fail
+rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+rem the _cmd.exe /c_ return code!
+if  not "" == "%GRADLE_EXIT_CONSOLE%" exit 1
+exit /b 1
+
+:mainEnd
+if "%OS%"=="Windows_NT" endlocal
+
+:omega
+ 1  
+Desarrollando una Aplicación/settings.gradle
+@@ -0,0 +1 @@
+include ':app'
